@@ -1,0 +1,60 @@
+version: '3'
+services:
+  order:
+    image: kulkarniishan/order_service:1.0
+    depends_on: 
+      - rabbitmq
+      - mongodb
+    networks:
+      - web
+    restart: always
+    links:
+      - rabbitmq
+      - mongodb
+  product:
+    image: kulkarniishan/product_service:1.0
+    depends_on: 
+      - rabbitmq
+      - mongodb
+    restart: always
+    networks:
+      - web
+    links:
+      - rabbitmq
+      - mongodb
+ 
+  auth:
+    image: kulkarniishan/auth:1.0
+    networks:
+      - web
+  nginx:
+    image: nginx
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+    networks:
+      - web
+  mongodb:
+    image: mongo
+    ports:
+      - "27017:27017"
+    networks:
+      - web
+    volumes: 
+      - dbdata:/data/db
+  rabbitmq: 
+    image: rabbitmq:3-management
+    environment:
+      RABBITMQ_DEFAULT_USER: "guest"
+      RABBITMQ_DEFAULT_PASS: "guest"
+    ports:
+      - "15672:15672"
+      - "5672:5672"
+    networks:
+      - web
+networks:
+  web:
+    driver: bridge
+volumes: 
+  dbdata:
